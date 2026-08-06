@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Urban Heat Island Explorer</title>
+
+    <!-- MapLibre CSS (for later integration) -->
+   
+    <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@6.2.0/dist/maplibre-gl.css' />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- ================= HEADER ================= -->
+
+    <header>
+      <div class="logo">
+        <i class="fa-solid fa-temperature-high"></i>
+
+        <div>
+          <h2>Urban Heat Island Explorer</h2>
+          <p>Interactive Web GIS Dashboard</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+
+          <input type="text" placeholder="Search location..." />
+        </div>
+
+        <button>
+          <i class="fa-solid fa-circle-info"></i>
+          About
+        </button>
+      </div>
+    </header>
+
+    <!-- ================= MAIN ================= -->
+
+    <main>
+      <!-- LEFT PANEL -->
+
+      <aside class="sidebar">
+        <section class="card">
+          <h3>
+            <i class="fa-solid fa-layer-group"></i>
+            Layers
+          </h3>
+
+          <label><input type="checkbox" checked /> Heat Map</label>
+
+          <label><input type="checkbox" checked /> Buildings</label>
+
+          <label><input type="checkbox" checked /> Parks</label>
+
+          <label><input type="checkbox" /> Trees</label>
+
+          <label><input type="checkbox" /> Roads</label>
+        </section>
+
+        <section class="card">
+          <h3>
+            <i class="fa-solid fa-sliders"></i>
+            Raster Opacity
+          </h3>
+
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="70"
+            placeholder="Opacity"
+          />
+        </section>
+
+        <section class="card">
+          <h3>
+            <i class="fa-solid fa-circle-dot"></i>
+            Buffer Radius
+          </h3>
+
+          <div class="buffer-buttons">
+            <button>100 m</button>
+
+            <button>250 m</button>
+
+            <button class="active">500 m</button>
+
+            <button>1000 m</button>
+          </div>
+        </section>
+
+        <button class="analysis-btn">
+          <i class="fa-solid fa-play"></i>
+
+          Run Analysis
+        </button>
+      </aside>
+
+      <!-- MAP -->
+
+      <section class="map-section">
+        <div id="map">
+          <!-- <div class="map-placeholder">
+            <i class="fa-solid fa-map-location-dot"></i>
+
+            <h2>MapLibre Map</h2>
+
+            <p>
+              Heat raster + Buildings + Parks
+              <br />
+              will be displayed here.
+            </p>
+          </div> -->
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL -->
+      <div id="analysis-toggle">
+        <i class="fa-solid fa-chevron-right"></i>
+      </div>
+      <aside class="results">
+        <h2>
+          <i class="fa-solid fa-chart-column"></i>
+          Analysis
+        </h2>
+
+        <div class="result-card">
+          <h4>Temperature</h4>
+
+          <span>-- °C</span>
+        </div>
+
+        <div class="result-card">
+          <h4>Parks Nearby</h4>
+
+          <span>--</span>
+        </div>
+
+        <div class="result-card">
+          <h4>Buildings Nearby</h4>
+
+          <span>--</span>
+        </div>
+
+        <div class="result-card">
+          <h4>Nearest Green Space</h4>
+
+          <span>-- m</span>
+        </div>
+
+        <div class="result-card">
+          <h4>Heat Risk</h4>
+
+          <span>Not Calculated</span>
+        </div>
+
+        <div class="legend">
+          <h3>Legend</h3>
+
+          <p><span class="red"></span> High Temperature</p>
+
+          <p><span class="orange"></span> Medium Temperature</p>
+
+          <p><span class="yellow"></span> Low Temperature</p>
+
+          <p><span class="green"></span> Park</p>
+
+          <p><span class="gray"></span> Building</p>
+        </div>
+      </aside>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+      <div id="coordDisplay">
+        <strong>Coordinates:</strong>
+
+        Latitude -- | Longitude --
+      </div>
+
+      <div>Built with MapLibre GL JS + Turf.js + OpenStreetMap</div>
+    </footer>
+    
+   <script src="https://unpkg.com/maplibre-gl@3.4.0/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
