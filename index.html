@@ -7,8 +7,11 @@
     <title>Urban Heat Island Explorer</title>
 
     <!-- MapLibre CSS (for later integration) -->
-   
-    <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@6.2.0/dist/maplibre-gl.css' />
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@6.2.0/dist/maplibre-gl.css"
+    />
 
     <!-- Font Awesome -->
     <link
@@ -64,11 +67,16 @@
             Layers
           </h3>
 
-          <label><input type="checkbox" id="layer-heatmap" checked /> Heat Map</label>
-          <label><input type="checkbox" id="layer-buildings" checked /> Buildings</label>
+          <label
+            ><input type="checkbox" id="layer-heatmap" checked /> Heat
+            Map</label
+          >
+          <label
+            ><input type="checkbox" id="layer-buildings" checked />
+            Buildings</label
+          >
           <label><input type="checkbox" id="layer-parks" /> Parks</label>
           <label><input type="checkbox" id="layer-trees" /> Trees</label>
-          <!-- <label><input type="checkbox" id="layer-vegetation" /> Vegetations </label> -->
           <label><input type="checkbox" id="layer-roads" /> Roads</label>
         </section>
 
@@ -95,14 +103,7 @@
           </h3>
 
           <div class="buffer-buttons">
-            <!-- <button class="active">100 m</button>
-
-            <button>250 m</button>
-
-            <button >500 m</button>
-
-            <button>1000 m</button> -->
-             <button class="active"  data-radius="100">100 m</button>
+            <button class="active" data-radius="100">100 m</button>
 
             <button data-radius="250">250 m</button>
 
@@ -122,9 +123,7 @@
       <!-- MAP -->
 
       <section class="map-section">
-        <div id="map">
-          
-        </div>
+        <div id="map"></div>
       </section>
 
       <!-- RIGHT PANEL -->
@@ -162,7 +161,7 @@
         </div>
 
         <div class="result-card">
-          <h4>Heat Risk</h4>
+          <h4>Surface Heat Level</h4>
 
           <span id="resultRisk">Not Calculated</span>
         </div>
@@ -181,7 +180,9 @@
 
         <div class="summary-card" id="analysisSummaryCard">
           <h4><i class="fa-solid fa-lightbulb"></i> Summary</h4>
-          <p id="analysisSummary">Run an analysis to see how green space relates to heat here.</p>
+          <p id="analysisSummary">
+            Run an analysis to see how green space relates to heat here.
+          </p>
         </div>
         <!-- ---------- -->
         <div class="legend">
@@ -216,9 +217,9 @@
       <div>Built with MapLibre GL JS + Turf.js + OpenStreetMap</div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/proj4@2.12.1/dist/proj4.js"></script>
-   <script src="https://unpkg.com/maplibre-gl@3.4.0/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@3.4.0/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/geotiff@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/geotiff@2"></script>
     <script src="script.js"></script>
   </body>
 </html>

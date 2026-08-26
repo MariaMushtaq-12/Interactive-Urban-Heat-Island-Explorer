@@ -89,9 +89,6 @@ map.on("mousemove", (e) => {
 
 // ── DATA ──────────────────────────────────────── 
 // ── VECTOR DATA (Parks · Buildings · Trees · Roads) ────────────────────────
-// Live OpenStreetMap data via the Overpass API, scoped to whatever's on
-// screen. Heat Map is intentionally left alone here — that's the raster
-// (LST) layer and belongs to a separate step.
 
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 const emptyFC = { type: "FeatureCollection", features: [] };
@@ -101,10 +98,6 @@ function bboxString(bounds) {
 }
 
 // Converts raw Overpass JSON (queried with "out geom;") into GeoJSON.
-// Nodes → Points, closed ways → Polygons (when asPolygon is true), open
-// ways → LineStrings. Multipolygon relations aren't handled yet — nearly
-// all individual parks in OSM are simple ways, so this covers the large
-// majority; worth revisiting if a specific park turns up empty.
 function overpassToGeoJSON(osmData, asPolygon) {
     const features = [];
     (osmData.elements || []).forEach((el) => {
@@ -136,11 +129,6 @@ function debounce(fn, delay) {
     };
 }
 
-// minzoom keeps Trees/Roads from firing a city-wide query the instant the
-// map loads — those layers can be dense, so they load in once you're
-// zoomed to street level. Parks are sparser and show earlier, but still
-// gated at a city-region scale so panning out to a whole country can't
-// trigger a runaway query. Buildings aren't here — they're loaded from
 const vectorLayers = {
     parks: {
         minzoom: 9,
@@ -211,46 +199,46 @@ const refreshAllVectorLayers = debounce(() => {
 
 // Shared by every layer below that needs to sit under map labels.
 function getFirstLabelLayerId() {
-  const layers = map.getStyle().layers;
-  for (const layer of layers) {
-    if (layer.type === "symbol" && layer.layout?.["text-field"]) {
-      return layer.id;
+    const layers = map.getStyle().layers;
+    for (const layer of layers) {
+        if (layer.type === "symbol" && layer.layout?.["text-field"]) {
+            return layer.id;
+        }
     }
-  }
-  return undefined;
+    return undefined;
 }
 
 // ── LAND SURFACE TEMPERATURE RASTER ─────────────────────────────────────
 const LST_RASTER_URL = "data/fa3f853496a7c1e8502bafd6204b6f8c-bd31bf69ef8a9f7b1b06be66c28271db_getPixels.png";
 const LST_RASTER_BOUNDS = [
-  [12.997, 47.830], // top-left      [lng, lat]
-  [13.097, 47.830], // top-right
-  [13.097, 47.770], // bottom-right
-  [12.997, 47.770]  // bottom-left
+    [12.997, 47.830], // top-left      [lng, lat]
+    [13.097, 47.830], // top-right
+    [13.097, 47.770], // bottom-right
+    [12.997, 47.770]  // bottom-left
 ];
 
 function addLstRasterLayer(labelLayerId) {
-  if (!map.getSource("lst-raster")) {
-    map.addSource("lst-raster", {
-      type: "image",
-      url: LST_RASTER_URL,
-      coordinates: LST_RASTER_BOUNDS
-    });
-  }
-  if (!map.getLayer("lst-raster-layer")) {
-    map.addLayer(
-      {
-        id: "lst-raster-layer",
-        type: "raster",
-        source: "lst-raster",
-        paint: {
-          "raster-opacity": 0.5, // matches the sidebar slider's default (70)
-          "raster-fade-duration": 0
-        }
-      },
-      labelLayerId
-    );
-  }
+    if (!map.getSource("lst-raster")) {
+        map.addSource("lst-raster", {
+            type: "image",
+            url: LST_RASTER_URL,
+            coordinates: LST_RASTER_BOUNDS
+        });
+    }
+    if (!map.getLayer("lst-raster-layer")) {
+        map.addLayer(
+            {
+                id: "lst-raster-layer",
+                type: "raster",
+                source: "lst-raster",
+                paint: {
+                    "raster-opacity": 0.5, // matches the sidebar slider's default (70)
+                    "raster-fade-duration": 0
+                }
+            },
+            labelLayerId
+        );
+    }
 }
 
 
@@ -320,22 +308,22 @@ function addBuildingLayers(labelLayerId) {
 
 map.on("load", () => {
     // Computed once and threaded through everything below, so every layer
-  // this app adds sits under text labels instead of covering them.
-  const labelLayerId = getFirstLabelLayerId();
+    // this app adds sits under text labels instead of covering them.
+    const labelLayerId = getFirstLabelLayerId();
 
-  // Heat map — bottom of the stack so vector layers stay legible on top
-  // of it. Visible by default (checkbox starts checked).
-  addLstRasterLayer(labelLayerId);
+    // Heat map — bottom of the stack so vector layers stay legible on top
+    // of it. Visible by default (checkbox starts checked).
+    addLstRasterLayer(labelLayerId);
     // Parks — visible by default (checkbox starts checked)
     map.addSource("vec-parks", { type: "geojson", data: emptyFC });
     map.addLayer({
         id: "vec-parks-fill", type: "fill", source: "vec-parks",
         paint: { "fill-color": "#43a047", "fill-opacity": 0.35 }
-    },labelLayerId);
+    }, labelLayerId);
     map.addLayer({
         id: "vec-parks-line", type: "line", source: "vec-parks",
         paint: { "line-color": "#2e7d32", "line-width": 1 }
-    },labelLayerId);
+    }, labelLayerId);
 
     // Buildings — real OSM data from OpenFreeMap's planet tiles, visible by
     // default (checkbox starts checked)
@@ -352,7 +340,7 @@ map.on("load", () => {
             "circle-stroke-width": 1,
             "circle-stroke-color": "#ffffff"
         }
-    },labelLayerId);
+    }, labelLayerId);
 
     // Roads — hidden by default (checkbox starts unchecked)
     map.addSource("vec-roads", { type: "geojson", data: emptyFC });
@@ -360,7 +348,7 @@ map.on("load", () => {
         id: "vec-roads-line", type: "line", source: "vec-roads",
         layout: { visibility: "none" },
         paint: { "line-color": "#90a4ae", "line-width": 1.5 }
-    },labelLayerId);
+    }, labelLayerId);
 
     refreshAllVectorLayers();
 });
@@ -393,58 +381,49 @@ if (buildingsCheckbox) {
 // Heat Map toggle — just visibility, the image source loads on its own
 const heatmapCheckbox = document.getElementById("layer-heatmap");
 if (heatmapCheckbox) {
-  heatmapCheckbox.addEventListener("change", () => {
-    if (map.getLayer("lst-raster-layer")) {
-      map.setLayoutProperty("lst-raster-layer", "visibility", heatmapCheckbox.checked ? "visible" : "none");
-    }
-  });
+    heatmapCheckbox.addEventListener("change", () => {
+        if (map.getLayer("lst-raster-layer")) {
+            map.setLayoutProperty("lst-raster-layer", "visibility", heatmapCheckbox.checked ? "visible" : "none");
+        }
+    });
 }
 
 // Raster Opacity slider — live-updates the heat map's transparency
 const opacitySlider = document.getElementById("rasterOpacity");
 if (opacitySlider) {
-  opacitySlider.addEventListener("input", () => {
-    if (map.getLayer("lst-raster-layer")) {
-      map.setPaintProperty("lst-raster-layer", "raster-opacity", opacitySlider.value / 100);
-    }
-  });
+    opacitySlider.addEventListener("input", () => {
+        if (map.getLayer("lst-raster-layer")) {
+            map.setPaintProperty("lst-raster-layer", "raster-opacity", opacitySlider.value / 100);
+        }
+    });
 }
 
- 
 
 // ── SPATIAL COMPUTATION ────────────────────────────────────────
 
-
-// Click a point -> pick a radius -> Run Analysis. Parks/buildings counts
-// come from a fresh, tightly-scoped Overpass query (independent of
-// whatever the Layers checkboxes currently show, so toggling a layer off
-// doesn't change what gets analyzed). LST comes from the real GeoTIFF —
-// the PNG on the map is colorized RGB and can't be read back as
-// temperature, which is exactly why the raw file matters here.
- 
-// >>> UPDATE THIS to your actual filename in data/ <<<
-// If you ran the optional raw-export block in earth-engine-lst-export.js
-// with fileNamePrefix "lst-salzburg-raw", this is very likely already
-// correct — just confirm the file in your Drive download matches.
-const LST_TIFF_URL = "data/f85645dee680dd09884d9bcd9f7a46b9-62b6d7dd56c73548ec5dee50bb79804b_getPixels.tiff";
- 
+proj4.defs(
+    "EPSG:32633",
+    "+proj=utm +zone=33 +datum=WGS84 +units=m +no_defs"
+);
+// const LST_TIFF_URL = "data/f85645dee680dd09884d9bcd9f7a46b9-62b6d7dd56c73548ec5dee50bb79804b_getPixels.tiff";
+const LST_TIFF_URL = "data/geotiff_lst_single.tiff";
 let selectedPoint = null;   // { lng, lat } — set by clicking the map
 let selectedRadius = 100;   // meters — set by the buffer radius buttons
 let selectedMarker = null;
 let analysisController = null;
 let tiffImagePromise = null; // cached so the file is only fetched/parsed once
- 
+
 // ---- point + radius selection --------------------------------------
- 
+
 map.on("click", (e) => {
     selectedPoint = { lng: e.lngLat.lng, lat: e.lngLat.lat };
- 
+
     if (selectedMarker) selectedMarker.remove();
     selectedMarker = new maplibregl.Marker({ color: "#1565c0" }).setLngLat(e.lngLat).addTo(map);
- 
+
     drawAnalysisBuffer(currentBufferPolygon());
 });
- 
+
 document.querySelectorAll(".buffer-buttons button").forEach((btn) => {
     btn.addEventListener("click", () => {
         document.querySelectorAll(".buffer-buttons button").forEach((b) => b.classList.remove("active"));
@@ -453,14 +432,14 @@ document.querySelectorAll(".buffer-buttons button").forEach((btn) => {
         if (selectedPoint) drawAnalysisBuffer(currentBufferPolygon());
     });
 });
- 
+
 function currentBufferPolygon() {
     return turf.circle([selectedPoint.lng, selectedPoint.lat], selectedRadius / 1000, {
         units: "kilometers",
         steps: 64
     });
 }
- 
+
 function drawAnalysisBuffer(bufferPolygon) {
     if (!map.getSource("analysis-buffer")) {
         map.addSource("analysis-buffer", { type: "geojson", data: emptyFC });
@@ -475,17 +454,14 @@ function drawAnalysisBuffer(bufferPolygon) {
     }
     map.getSource("analysis-buffer").setData(bufferPolygon);
 }
- 
-// ---- Overpass: parks + buildings scoped tightly around the click ----
-// Wider than the buffer itself so "nearest green space" can find a park
-// just outside the buffer, not only ones already inside it.
- 
+
+// ---- Overpass: parks + buildings scoped tightly around the click ---- 
 function overpassBboxAround(lng, lat, radiusMeters) {
     const dLat = radiusMeters / 111320;
     const dLng = radiusMeters / (111320 * Math.cos((lat * Math.PI) / 180));
     return [lat - dLat, lng - dLng, lat + dLat, lng + dLng].join(",");
 }
- 
+
 function fetchOverpassGeoJSON(query, asPolygon, signal) {
     return fetch(OVERPASS_URL, {
         method: "POST",
@@ -495,7 +471,7 @@ function fetchOverpassGeoJSON(query, asPolygon, signal) {
         .then((res) => res.json())
         .then((data) => overpassToGeoJSON(data, asPolygon));
 }
- 
+
 function safeIntersects(feature, polygon) {
     try {
         return turf.booleanIntersects(feature, polygon);
@@ -503,7 +479,7 @@ function safeIntersects(feature, polygon) {
         return false; // malformed/self-intersecting OSM geometry — skip rather than crash
     }
 }
- 
+
 function nearestGreenSpaceDistance(pointCoords, parkFeatures) {
     if (!parkFeatures.length) return null;
     const pt = turf.point(pointCoords);
@@ -524,9 +500,6 @@ function nearestGreenSpaceDistance(pointCoords, parkFeatures) {
     return Number.isFinite(min) ? Math.round(min) : null;
 }
 // ---- Coverage: how much of the buffer is actually green vs. built ----
-// This is the number that connects the two halves of the UHI story —
-// "3 parks nearby" doesn't say how much ground they cover, and coverage
-// is what actually correlates with surface temperature.
 
 function safeIntersectionArea(feature, bufferPolygon) {
     try {
@@ -537,9 +510,6 @@ function safeIntersectionArea(feature, bufferPolygon) {
     }
 }
 
-// Parks/forest/grass tags frequently overlap in OSM (e.g. a lawn mapped
-// inside a park), so these are merged into one shape first — otherwise
-// overlapping polygons would double-count the same ground twice.
 function greenCoveragePercent(bufferPolygon, bufferArea, parkFeatures) {
     if (bufferArea <= 0 || !parkFeatures.length) return 0;
     let merged = null;
@@ -554,16 +524,13 @@ function greenCoveragePercent(bufferPolygon, bufferArea, parkFeatures) {
     return Math.min(100, (safeIntersectionArea(merged, bufferPolygon) / bufferArea) * 100);
 }
 
-// Individual building footprints don't overlap each other, so a simple
-// sum is safe here — no union/dissolve needed, unlike green coverage.
 function builtCoveragePercent(bufferPolygon, bufferArea, buildingFeatures) {
     if (bufferArea <= 0 || !buildingFeatures.length) return 0;
     const builtArea = buildingFeatures.reduce((sum, f) => sum + safeIntersectionArea(f, bufferPolygon), 0);
     return Math.min(100, (builtArea / bufferArea) * 100);
 }
- 
-// ---- GeoTIFF: real LST values, sampled + averaged over the buffer ----
- 
+
+// ---- GeoTIFF: real LST values, sampled + averaged over the buffer ---- 
 function getTiffImage() {
     if (!tiffImagePromise) {
         tiffImagePromise = GeoTIFF.fromUrl(LST_TIFF_URL)
@@ -584,13 +551,11 @@ function getTiffImage() {
                 }
                 return image;
             });
+   
     }
     return tiffImagePromise;
+    
 }
- proj4.defs(
-    "EPSG:32633",
-    "+proj=utm +zone=33 +datum=WGS84 +units=m +no_defs"
-);
 function projectBufferToRasterCRS(bufferPolygon) {
 
     const projectedCoordinates = bufferPolygon.geometry.coordinates.map(
@@ -622,31 +587,29 @@ function projectBufferToRasterCRS(bufferPolygon) {
         }
     };
 }
-// Reads only the pixel window covering the buffer's bounding box (not the
-// whole file), resamples it to a small fixed grid, then keeps only the
-// samples that actually fall inside the circular buffer before averaging.
+
 async function sampleLstAverage(bufferPolygon, tiffImage) {
     const [minX, minY, maxX, maxY] = tiffImage.getBoundingBox();
     const imgW = tiffImage.getWidth();
     const imgH = tiffImage.getHeight();
- 
+
     const [bMinX, bMinY, bMaxX, bMaxY] = turf.bbox(bufferPolygon);
- 
+
     const toCol = (lng) => ((lng - minX) / (maxX - minX)) * imgW;
     const toRow = (lat) => ((maxY - lat) / (maxY - minY)) * imgH; // row 0 = top = maxY
- 
+
     const left = Math.max(0, Math.floor(toCol(bMinX)));
     const right = Math.min(imgW, Math.ceil(toCol(bMaxX)));
     const top = Math.max(0, Math.floor(toRow(bMaxY)));
     const bottom = Math.min(imgH, Math.ceil(toRow(bMinY)));
- 
+
     if (right <= left || bottom <= top) {
         return { average: null, sampleCount: 0 }; // buffer falls outside the raster entirely
     }
- 
+
     const outW = Math.max(4, Math.min(64, right - left));
     const outH = Math.max(4, Math.min(64, bottom - top));
- 
+
     const rasters = await tiffImage.readRasters({
         window: [left, top, right, bottom],
         width: outW,
@@ -654,7 +617,7 @@ async function sampleLstAverage(bufferPolygon, tiffImage) {
         resampleMethod: "bilinear"
     });
     const band = rasters[0];
- 
+
     let sum = 0, count = 0;
     for (let row = 0; row < outH; row++) {
         for (let col = 0; col < outW; col++) {
@@ -669,88 +632,23 @@ async function sampleLstAverage(bufferPolygon, tiffImage) {
             }
         }
     }
- 
+
     return count > 0 ? { average: sum / count, sampleCount: count } : { average: null, sampleCount: 0 };
 }
- 
+
 // ---- Heat risk — a simple, adjustable heuristic, not a scientific ----
-// standard. Tune these breakpoints to whatever your study area's actual
-// summer range turns out to be once you have real data.
 function heatRiskLabel(avgC) {
     if (avgC == null || !Number.isFinite(avgC)) return "Unknown";
-    if (avgC < 25) return "Low";
-    if (avgC < 32) return "Moderate";
-    if (avgC < 38) return "High";
-    return "Severe";
-}
- 
-// ---- UI plumbing ------------------------------------------------------
- 
-function setAnalysisLoading(isLoading) {
-    const btn = document.querySelector(".analysis-btn");
-    if (!btn) return;
-    btn.disabled = isLoading;
-    const icon = btn.querySelector("i");
-    if (icon) {
-        icon.classList.toggle("fa-play", !isLoading);
-        icon.classList.toggle("fa-spinner", isLoading);
-        icon.classList.toggle("fa-spin", isLoading);
-    }
-}
- 
-function flashNeedsPoint() {
-    const btn = document.querySelector(".analysis-btn");
-    if (!btn) return;
-    const original = btn.innerHTML;
-    btn.classList.add("needs-point");
-    btn.innerHTML = '<i class="fa-solid fa-map-pin"></i> Click the map first';
-    setTimeout(() => {
-        btn.classList.remove("needs-point");
-        btn.innerHTML = original;
-    }, 1600);
-}
- 
-// function updateResultsPanel({ parksCount, buildingsCount, nearestDistance, avgLst }) {
-//     document.getElementById("resultTemp").textContent = avgLst != null ? `${avgLst.toFixed(1)} °C` : "No data";
-//     document.getElementById("resultParks").textContent = parksCount;
-//     document.getElementById("resultBuildings").textContent = buildingsCount;
-//     document.getElementById("resultNearest").textContent = nearestDistance != null ? `${nearestDistance} m` : "—";
-//     document.getElementById("resultRisk").textContent = heatRiskLabel(avgLst);
-// }
- // Ties the numbers together into the actual point of the tool — not
-// just what the values are, but what they mean for this spot.
-function buildAnalysisSummary({ avgLst, riskLabel, greenPct, builtPct, parksCount, nearestDistance, radius }) {
-    if (avgLst == null) {
-        return "Temperature data isn't available for this point — check that the LST raster covers this area.";
-    }
-    const greenDesc = greenPct >= 30 ? "strong" : greenPct >= 15 ? "moderate" : "limited";
-    const builtDesc = builtPct >= 40 ? "high" : builtPct >= 20 ? "moderate" : "low";
-    const nearestDesc = nearestDistance == null
-        ? "no mapped green space nearby"
-        : nearestDistance === 0
-        ? "sitting inside a green space"
-        : `the nearest green space ${nearestDistance} m away`;
-
-    return `This ${radius} m area shows ${riskLabel.toLowerCase()} heat risk at ${avgLst.toFixed(1)}°C, with ` +
-        `${greenDesc} green coverage (${greenPct.toFixed(0)}%) and ${builtDesc} built coverage (${builtPct.toFixed(0)}%). ` +
-        `${parksCount} park${parksCount === 1 ? "" : "s"} mapped in range, with ${nearestDesc}.`;
+    if (avgC < 23) return "No Thermal Stress";
+    if (avgC < 29) return "Slight Heat Stress";
+    if (avgC < 35) return "Moderate Heat Stress";
+    if (avgC < 38) return "Strong Heat Stress";
+    return "Severe Heat Stress";
 }
 
-function updateResultsPanel({ parksCount, buildingsCount, nearestDistance, avgLst, greenPct, builtPct, radius }) {
-    document.getElementById("resultTemp").textContent = avgLst != null ? `${avgLst.toFixed(1)} °C` : "No data";
-    document.getElementById("resultParks").textContent = parksCount;
-    document.getElementById("resultBuildings").textContent = buildingsCount;
-    document.getElementById("resultNearest").textContent = nearestDistance != null ? `${nearestDistance} m` : "—";
-    const risk = heatRiskLabel(avgLst);
-    document.getElementById("resultRisk").textContent = risk;
-    document.getElementById("resultGreenCoverage").textContent = `${greenPct.toFixed(0)}%`;
-    document.getElementById("resultBuiltCoverage").textContent = `${builtPct.toFixed(0)}%`;
-    document.getElementById("analysisSummary").textContent = buildAnalysisSummary({
-        avgLst, riskLabel: risk, greenPct, builtPct, parksCount, nearestDistance, radius
-    });
-}
+
 // ---- Run Analysis -------------------------------------------------
- 
+
 async function runAnalysis() {
     if (!selectedPoint) {
         flashNeedsPoint();
@@ -784,37 +682,40 @@ async function runAnalysis() {
         const parksInBuffer = parksData.features.filter((f) => safeIntersects(f, bufferPolygon));
         const buildingsInBuffer = queryBuildingsInBuffer(bufferPolygon);
         const nearestDistance = nearestGreenSpaceDistance([selectedPoint.lng, selectedPoint.lat], parksData.features);
-  const projectedBuffer = projectBufferToRasterCRS(bufferPolygon);
+        const projectedBuffer = projectBufferToRasterCRS(bufferPolygon);
 
         let avgLst = null;
         if (tiffResult.status === "fulfilled") {
             console.log("LST sample value:", tiffResult.value);
-            // const lstStats = await sampleLstAverage(bufferPolygon, tiffResult.value);
-            // avgLst = lstStats.average;
-            // console.log("LST sample stats:", lstStats, "Average LST:", avgLst);
-          
-console.log("Original buffer CRS: EPSG:4326", bufferPolygon);
-console.log("Projected buffer CRS: EPSG:32633", projectedBuffer);
+            console.log("Original buffer CRS: EPSG:4326", bufferPolygon);
+            console.log("Projected buffer CRS: EPSG:32633", projectedBuffer);
 
-const lstStats = await sampleLstAverage(
-    projectedBuffer,
-    tiffResult.value
-);
+            const lstStats = await sampleLstAverage(
+                projectedBuffer,
+                tiffResult.value
+            );
 
-avgLst = lstStats.average;
+            avgLst = lstStats.average;
 
-console.log(
-    "LST sample stats:",
-    lstStats,
-    "Average LST:",
-    avgLst
-);
+            console.log(
+                "LST sample stats:",
+                lstStats,
+                "Average LST:",
+                avgLst
+            );
+                     const image = tiffResult.value;
+
+console.log("GeoTIFF file directory:", image.fileDirectory);
+console.log("GeoTIFF GDAL metadata:", image.getGDALMetadata());
+console.log("Number of bands:", image.getSamplesPerPixel());
+
+            
         } else {
             console.warn("LST raster unavailable:", tiffResult.reason);
         }
 
 
-        // -------------
+
         const bufferArea = turf.area(bufferPolygon);
         const greenPct = greenCoveragePercent(bufferPolygon, bufferArea, parksInBuffer);
         const builtPct = builtCoveragePercent(bufferPolygon, bufferArea, buildingsInBuffer);
@@ -828,24 +729,14 @@ console.log(
             builtPct,
             radius: selectedRadius
         });
-        // -----------
-        // updateResultsPanel({
-        //     parksCount: parksInBuffer.length,
-        //     buildingsCount: buildingsInBuffer.length,
-        //     nearestDistance,
-        //     avgLst
-        // });
+
     } catch (err) {
         if (err.name !== "AbortError") console.error("Analysis failed:", err);
     } finally {
         setAnalysisLoading(false);
     }
 }
-// Buildings come straight from the same planet-tiles source the 3D layer
-// renders from — same data as what's on screen, no separate network call.
-// Only sees tiles MapLibre has already loaded, so it undercounts for an
-// area you haven't looked at yet — zoom/pan there (or leave Buildings
-// checked) before Run Analysis so the tiles are already in.
+
 function queryBuildingsInBuffer(bufferPolygon) {
     if (!map.getSource("ofm-tiles")) return [];
 
@@ -868,5 +759,63 @@ function queryBuildingsInBuffer(bufferPolygon) {
     console.log("Total buildings in buffer:", result.length);
     return result;
 }
- 
+
 document.querySelector(".analysis-btn").addEventListener("click", runAnalysis);
+
+
+// ---- UI plumbing ------------------------------------------------------
+
+function setAnalysisLoading(isLoading) {
+    const btn = document.querySelector(".analysis-btn");
+    if (!btn) return;
+    btn.disabled = isLoading;
+    const icon = btn.querySelector("i");
+    if (icon) {
+        icon.classList.toggle("fa-play", !isLoading);
+        icon.classList.toggle("fa-spinner", isLoading);
+        icon.classList.toggle("fa-spin", isLoading);
+    }
+}
+
+function flashNeedsPoint() {
+    const btn = document.querySelector(".analysis-btn");
+    if (!btn) return;
+    const original = btn.innerHTML;
+    btn.classList.add("needs-point");
+    btn.innerHTML = '<i class="fa-solid fa-map-pin"></i> Click the map first';
+    setTimeout(() => {
+        btn.classList.remove("needs-point");
+        btn.innerHTML = original;
+    }, 1600);
+}
+
+function buildAnalysisSummary({ avgLst, riskLabel, greenPct, builtPct, parksCount, nearestDistance, radius }) {
+    if (avgLst == null) {
+        return "Temperature data isn't available for this point — check that the LST raster covers this area.";
+    }
+    const greenDesc = greenPct >= 30 ? "strong" : greenPct >= 15 ? "moderate" : "limited";
+    const builtDesc = builtPct >= 40 ? "high" : builtPct >= 20 ? "moderate" : "low";
+    const nearestDesc = nearestDistance == null
+        ? "no mapped green space nearby"
+        : nearestDistance === 0
+            ? "sitting inside a green space"
+            : `the nearest green space ${nearestDistance} m away`;
+
+    return `This ${radius} m area shows ${riskLabel.toLowerCase()} heat risk at ${avgLst.toFixed(1)}°C, with ` +
+        `${greenDesc} green coverage (${greenPct.toFixed(0)}%) and ${builtDesc} built coverage (${builtPct.toFixed(0)}%). ` +
+        `${parksCount} park${parksCount === 1 ? "" : "s"} mapped in range, with ${nearestDesc}.`;
+}
+
+function updateResultsPanel({ parksCount, buildingsCount, nearestDistance, avgLst, greenPct, builtPct, radius }) {
+    document.getElementById("resultTemp").textContent = avgLst != null ? `${avgLst.toFixed(1)} °C` : "No data";
+    document.getElementById("resultParks").textContent = parksCount;
+    document.getElementById("resultBuildings").textContent = buildingsCount;
+    document.getElementById("resultNearest").textContent = nearestDistance != null ? `${nearestDistance} m` : "—";
+    const risk = heatRiskLabel(avgLst);
+    document.getElementById("resultRisk").textContent = risk;
+    document.getElementById("resultGreenCoverage").textContent = `${greenPct.toFixed(0)}%`;
+    document.getElementById("resultBuiltCoverage").textContent = `${builtPct.toFixed(0)}%`;
+    document.getElementById("analysisSummary").textContent = buildAnalysisSummary({
+        avgLst, riskLabel: risk, greenPct, builtPct, parksCount, nearestDistance, radius
+    });
+}
