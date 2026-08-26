@@ -249,7 +249,21 @@ main {
 .analysis-btn:hover {
     background: #1b5e20;
 }
+.analysis-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
 
+.analysis-btn.needs-point {
+    background: #c62828;
+    animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
 /* ==========================
    MAP
 ========================== */
@@ -434,6 +448,15 @@ main {
     background: #757575;
 }
 
+.darkgreen {
+    background: #234128;
+}
+
+.bluegray {
+    background: #233c48;
+}
+
+
 /* ==========================
    FOOTER
 ========================== */
@@ -508,4 +531,28 @@ footer {
     .map-section {
         height: 500px;
     }
+}
+
+
+.summary-card {
+    background: #eef6ff;
+    border-left: 5px solid #1565c0;
+    padding: 18px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.summary-card h4 {
+    font-size: 15px;
+    color: #1565c0;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-card p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
 }

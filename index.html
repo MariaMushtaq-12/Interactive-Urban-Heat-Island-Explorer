@@ -64,15 +64,12 @@
             Layers
           </h3>
 
-          <label><input type="checkbox" checked /> Heat Map</label>
-
-          <label><input type="checkbox" checked /> Buildings</label>
-
-          <label><input type="checkbox" checked /> Parks</label>
-
-          <label><input type="checkbox" /> Trees</label>
-
-          <label><input type="checkbox" /> Roads</label>
+          <label><input type="checkbox" id="layer-heatmap" checked /> Heat Map</label>
+          <label><input type="checkbox" id="layer-buildings" checked /> Buildings</label>
+          <label><input type="checkbox" id="layer-parks" /> Parks</label>
+          <label><input type="checkbox" id="layer-trees" /> Trees</label>
+          <!-- <label><input type="checkbox" id="layer-vegetation" /> Vegetations </label> -->
+          <label><input type="checkbox" id="layer-roads" /> Roads</label>
         </section>
 
         <section class="card">
@@ -85,8 +82,9 @@
             type="range"
             min="0"
             max="100"
-            value="70"
+            value="50"
             placeholder="Opacity"
+            id="rasterOpacity"
           />
         </section>
 
@@ -97,13 +95,20 @@
           </h3>
 
           <div class="buffer-buttons">
-            <button>100 m</button>
+            <!-- <button class="active">100 m</button>
 
             <button>250 m</button>
 
-            <button class="active">500 m</button>
+            <button >500 m</button>
 
-            <button>1000 m</button>
+            <button>1000 m</button> -->
+             <button class="active"  data-radius="100">100 m</button>
+
+            <button data-radius="250">250 m</button>
+
+            <button data-radius="500">500 m</button>
+
+            <button data-radius="1000">1000 m</button>
           </div>
         </section>
 
@@ -118,17 +123,7 @@
 
       <section class="map-section">
         <div id="map">
-          <!-- <div class="map-placeholder">
-            <i class="fa-solid fa-map-location-dot"></i>
-
-            <h2>MapLibre Map</h2>
-
-            <p>
-              Heat raster + Buildings + Parks
-              <br />
-              will be displayed here.
-            </p>
-          </div> -->
+          
         </div>
       </section>
 
@@ -145,33 +140,50 @@
         <div class="result-card">
           <h4>Temperature</h4>
 
-          <span>-- °C</span>
+          <span id="resultTemp">-- °C</span>
         </div>
 
         <div class="result-card">
           <h4>Parks Nearby</h4>
 
-          <span>--</span>
+          <span id="resultParks">--</span>
         </div>
 
         <div class="result-card">
           <h4>Buildings Nearby</h4>
 
-          <span>--</span>
+          <span id="resultBuildings">--</span>
         </div>
 
         <div class="result-card">
           <h4>Nearest Green Space</h4>
 
-          <span>-- m</span>
+          <span id="resultNearest">-- m</span>
         </div>
 
         <div class="result-card">
           <h4>Heat Risk</h4>
 
-          <span>Not Calculated</span>
+          <span id="resultRisk">Not Calculated</span>
+        </div>
+        <!-- ------------------- -->
+        <div class="result-card">
+          <h4>Green Coverage</h4>
+
+          <span id="resultGreenCoverage">--%</span>
         </div>
 
+        <div class="result-card">
+          <h4>Built Coverage</h4>
+
+          <span id="resultBuiltCoverage">--%</span>
+        </div>
+
+        <div class="summary-card" id="analysisSummaryCard">
+          <h4><i class="fa-solid fa-lightbulb"></i> Summary</h4>
+          <p id="analysisSummary">Run an analysis to see how green space relates to heat here.</p>
+        </div>
+        <!-- ---------- -->
         <div class="legend">
           <h3>Legend</h3>
 
@@ -184,6 +196,10 @@
           <p><span class="green"></span> Park</p>
 
           <p><span class="gray"></span> Building</p>
+
+          <p><span class="darkgreen"></span> Tree</p>
+
+          <p><span class="bluegray"></span> Road</p>
         </div>
       </aside>
     </main>
@@ -199,9 +215,10 @@
 
       <div>Built with MapLibre GL JS + Turf.js + OpenStreetMap</div>
     </footer>
-    
+    <script src="https://cdn.jsdelivr.net/npm/proj4@2.12.1/dist/proj4.js"></script>
    <script src="https://unpkg.com/maplibre-gl@3.4.0/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/geotiff@2"></script>
     <script src="script.js"></script>
   </body>
 </html>
