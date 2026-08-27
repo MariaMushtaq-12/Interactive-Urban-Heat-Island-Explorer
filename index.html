@@ -48,7 +48,7 @@
           <input type="text" placeholder="Search location..." />
         </div>
 
-        <button>
+        <button id="about-button">
           <i class="fa-solid fa-circle-info"></i>
           About
         </button>
@@ -203,6 +203,87 @@
           <p><span class="bluegray"></span> Road</p>
         </div>
       </aside>
+      <!-- ABOUT MODAL -->
+<div id="about-modal" class="about-modal">
+
+    <div class="about-popup">
+
+        <!-- Close button -->
+        <button id="about-close" class="about-close" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="about-header">
+            <div class="about-icon">
+                <i class="fa-solid fa-temperature-half"></i>
+            </div>
+
+            <div>
+                <h2>Urban Heat Island Explorer</h2>
+                <p>Interactive WebGIS Application</p>
+            </div>
+        </div>
+
+        <div class="about-content">
+
+            <p>
+                This application helps explore the <strong>Urban Heat Island
+                effect in Salzburg</strong> by combining satellite-based land
+                surface temperature with urban and green-space data.
+            </p>
+
+            <div class="about-grid">
+
+                <div class="about-item">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <div>
+                        <strong>Study Area</strong>
+                        <span>Salzburg, Austria</span>
+                    </div>
+                </div>
+
+                <div class="about-item">
+                    <i class="fa-solid fa-satellite"></i>
+                    <div>
+                        <strong>Raster Data</strong>
+                        <span>Land Surface Temperature</span>
+                    </div>
+                </div>
+
+                <div class="about-item">
+                    <i class="fa-solid fa-tree"></i>
+                    <div>
+                        <strong>Vector Data</strong>
+                        <span>Parks, Buildings, Trees & Roads</span>
+                    </div>
+                </div>
+
+                <div class="about-item">
+                    <i class="fa-solid fa-compass-drafting"></i>
+                    <div>
+                        <strong>Spatial Analysis</strong>
+                        <span>Interactive buffer analysis</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="about-tools">
+                <span>Built with</span>
+
+                <div class="tool-tags">
+                    <span>MapLibre GL JS</span>
+                    <span>Turf.js</span>
+                    <span>GeoTIFF.js</span>
+                    <span>OpenStreetMap</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
     </main>
 
     <!-- ================= FOOTER ================= -->

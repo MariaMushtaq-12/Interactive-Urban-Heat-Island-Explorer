@@ -1,3 +1,21 @@
+const aboutButton = document.getElementById("about-button");
+const aboutModal = document.getElementById("about-modal");
+const aboutClose = document.getElementById("about-close");
+
+aboutButton.addEventListener("click", () => {
+    aboutModal.classList.add("active");
+});
+
+aboutClose.addEventListener("click", () => {
+    aboutModal.classList.remove("active");
+});
+
+// Close when clicking outside the popup
+aboutModal.addEventListener("click", (event) => {
+    if (event.target === aboutModal) {
+        aboutModal.classList.remove("active");
+    }
+});
 // ── ANALYSIS TOGGLE ────────────────────────────────────────
 document.getElementById("analysis-toggle").addEventListener("click", function () {
     const toggle = document.getElementById("analysis-toggle");

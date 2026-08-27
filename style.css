@@ -569,3 +569,170 @@ footer {
     line-height: 1.5;
     color: #333;
 }
+
+
+
+/* ==========================
+   ABOUT MODAL
+========================== */
+
+.about-modal {
+    position: fixed;
+    inset: 0;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    z-index: 20000;
+}
+
+.about-modal.active {
+    display: flex;
+}
+
+.about-popup {
+    position: relative;
+
+    width: min(520px, 90vw);
+    max-height: 85vh;
+
+    overflow-y: auto;
+
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.about-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+
+    width: 36px;
+    height: 36px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f1f3f5;
+    color: #455a64;
+
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.about-close:hover {
+    background: #e0e0e0;
+}
+
+.about-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.about-icon {
+    width: 55px;
+    height: 55px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: #1565c0;
+    color: white;
+
+    font-size: 25px;
+}
+
+.about-header h2 {
+    margin: 0;
+    color: #1565c0;
+    font-size: 22px;
+}
+
+.about-header p {
+    margin: 5px 0 0;
+    color: #78909c;
+}
+
+.about-content > p {
+    line-height: 1.6;
+    color: #455a64;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.about-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 12px;
+
+    background: #f5f8fa;
+    border-radius: 10px;
+}
+
+.about-item > i {
+    color: #2e7d32;
+    font-size: 20px;
+}
+
+.about-item strong,
+.about-item span {
+    display: block;
+}
+
+.about-item strong {
+    font-size: 14px;
+    color: #263238;
+}
+
+.about-item span {
+    margin-top: 3px;
+    font-size: 12px;
+    color: #78909c;
+}
+
+.about-tools {
+    margin-top: 20px;
+}
+
+.about-tools > span {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #455a64;
+}
+
+.tool-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tool-tags span {
+    background: #e3f2fd;
+    color: #1565c0;
+
+    padding: 6px 10px;
+    border-radius: 20px;
+
+    font-size: 12px;
+}
