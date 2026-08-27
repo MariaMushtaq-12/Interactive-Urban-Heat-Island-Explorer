@@ -17,29 +17,62 @@ aboutModal.addEventListener("click", (event) => {
     }
 });
 // ── ANALYSIS TOGGLE ────────────────────────────────────────
-document.getElementById("analysis-toggle").addEventListener("click", function () {
-    const toggle = document.getElementById("analysis-toggle");
-    var resultsPanel = document.querySelector(".results");
-    var icon = toggle.querySelector("i");
-    var main = document.querySelector("main");
+// document.getElementById("analysis-toggle").addEventListener("click", function () {
+//     const toggle = document.getElementById("analysis-toggle");
+//     var resultsPanel = document.querySelector(".results");
+//     var icon = toggle.querySelector("i");
+//     var main = document.querySelector("main");
 
+//     resultsPanel.classList.toggle("hidden");
+
+
+//     if (resultsPanel.classList.contains("hidden")) {
+//         icon.classList.remove("fa-chevron-right");
+//         icon.classList.add("fa-chevron-left");
+//         main.style.gridTemplateColumns = "280px 1fr";
+//         toggle.style.right = "0";
+//     } else {
+//         icon.classList.remove("fa-chevron-left");
+//         icon.classList.add("fa-chevron-right");
+
+//         main.style.gridTemplateColumns = "280px 1fr 320px";
+//         toggle.style.right = "320px";
+//     }
+// });
+document.getElementById("analysis-toggle").addEventListener("click", function () {
+
+    const toggle = document.getElementById("analysis-toggle");
+    const resultsPanel = document.querySelector(".results");
+    const icon = toggle.querySelector("i");
+    const main = document.querySelector("main");
+
+    // Toggle analysis panel
     resultsPanel.classList.toggle("hidden");
 
+    // Toggle main layout
+    main.classList.toggle("analysis-hidden");
+
+    // Toggle button position
+    toggle.classList.toggle("closed");
 
     if (resultsPanel.classList.contains("hidden")) {
+
         icon.classList.remove("fa-chevron-right");
         icon.classList.add("fa-chevron-left");
-        main.style.gridTemplateColumns = "280px 1fr";
-        toggle.style.right = "0";
+
     } else {
+
         icon.classList.remove("fa-chevron-left");
         icon.classList.add("fa-chevron-right");
 
-        main.style.gridTemplateColumns = "280px 1fr 320px";
-        toggle.style.right = "320px";
     }
-});
 
+    // Resize MapLibre after layout changes
+    setTimeout(() => {
+        map.resize();
+    }, 350);
+
+});
 // ── MAP INIT ────────────────────────────────────────
 const map = new maplibregl.Map({
     container: "map",
