@@ -17,28 +17,7 @@ aboutModal.addEventListener("click", (event) => {
     }
 });
 // ── ANALYSIS TOGGLE ────────────────────────────────────────
-// document.getElementById("analysis-toggle").addEventListener("click", function () {
-//     const toggle = document.getElementById("analysis-toggle");
-//     var resultsPanel = document.querySelector(".results");
-//     var icon = toggle.querySelector("i");
-//     var main = document.querySelector("main");
 
-//     resultsPanel.classList.toggle("hidden");
-
-
-//     if (resultsPanel.classList.contains("hidden")) {
-//         icon.classList.remove("fa-chevron-right");
-//         icon.classList.add("fa-chevron-left");
-//         main.style.gridTemplateColumns = "280px 1fr";
-//         toggle.style.right = "0";
-//     } else {
-//         icon.classList.remove("fa-chevron-left");
-//         icon.classList.add("fa-chevron-right");
-
-//         main.style.gridTemplateColumns = "280px 1fr 320px";
-//         toggle.style.right = "320px";
-//     }
-// });
 document.getElementById("analysis-toggle").addEventListener("click", function () {
 
     const toggle = document.getElementById("analysis-toggle");
@@ -225,7 +204,7 @@ const vectorLayers = {
         // controller: null,
         // query: (bbox) =>
         //     `[out:json][timeout:25];way["highway"~"^(primary|secondary|tertiary|residential)$"](${bbox});out geom;`
-         query: (bbox) =>
+        query: (bbox) =>
             `[out:json][timeout:25];
             way["highway"~"^(primary|secondary|tertiary|residential)$"](${bbox});
             out geom;`
@@ -234,60 +213,7 @@ const vectorLayers = {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-// async function preloadVectorLayer(key) {
 
-//     const cfg = vectorLayers[key];
-
-//     const query = cfg.query(SALZBURG_BBOX);
-
-//     try {
-
-//         const response = await fetch(
-//             OVERPASS_URL,
-//             {
-//                 method: "POST",
-//                 body: "data=" + encodeURIComponent(query)
-//             }
-//         );
-
-//         if (!response.ok) {
-//             throw new Error(`HTTP ${response.status}`);
-//         }
-
-//         const osmData = await response.json();
-
-//         const geojson = overpassToGeoJSON(
-//             osmData,
-//             cfg.asPolygon
-//         );
-
-//         // Store permanently in browser memory
-//         vectorDataCache[key] = geojson;
-
-//         console.log(
-//             `${key} preloaded:`,
-//             geojson.features.length,
-//             "features"
-//         );
-
-//         // Keep it hidden initially
-//         const source = map.getSource("vec-" + key);
-
-//         if (source) {
-//             source.setData(emptyFC);
-//         }
-
-//     } catch (error) {
-
-//         console.error(
-//             `Failed to preload ${key}:`,
-//             error
-//         );
-
-//         vectorDataCache[key] = emptyFC;
-
-//     }
-// }
 async function preloadVectorLayer(key) {
 
     const cfg = vectorLayers[key];
@@ -380,7 +306,6 @@ async function preloadVectorLayer(key) {
     }
 }
 
-
 async function preloadAllVectorLayers() {
 
     console.log("Loading Salzburg vector data...");
@@ -397,39 +322,7 @@ async function preloadAllVectorLayers() {
 
     console.log("✓ All Salzburg vector data loading finished.");
 }
-// function fetchVectorLayer(key) {
-//     const cfg = vectorLayers[key];
-//     const sourceId = "vec-" + key;
-//     if (!cfg.checkbox || !map.getSource(sourceId)) return;
 
-//     const zoomOk = map.getZoom() >= cfg.minzoom;
-//     const isChecked = cfg.checkbox.checked;
-
-//     if (!isChecked || !zoomOk) {
-//         map.getSource(sourceId).setData(emptyFC);
-//         return;
-//     }
-
-//     if (cfg.controller) cfg.controller.abort();
-//     const controller = new AbortController();
-//     cfg.controller = controller;
-
-//     const query = cfg.query(bboxString(map.getBounds()));
-
-//     fetch(OVERPASS_URL, {
-//         method: "POST",
-//         body: "data=" + encodeURIComponent(query),
-//         signal: controller.signal
-//     })
-//         .then((res) => res.json())
-//         .then((data) => {
-//             const geojson = overpassToGeoJSON(data, cfg.asPolygon);
-//             if (map.getSource(sourceId)) map.getSource(sourceId).setData(geojson);
-//         })
-//         .catch((err) => {
-//             if (err.name !== "AbortError") console.warn(`Vector layer "${key}" failed to load:`, err);
-//         });
-// }
 
 function toggleVectorLayer(key) {
 
@@ -456,9 +349,6 @@ function toggleVectorLayer(key) {
 
 }
 
-// const refreshAllVectorLayers = debounce(() => {
-//     Object.keys(vectorLayers).forEach(fetchVectorLayer);
-// }, 700);
 
 
 // Shared by every layer below that needs to sit under map labels.
@@ -571,7 +461,7 @@ function addBuildingLayers(labelLayerId) {
 }
 
 map.on("load", () => {
-   
+
     // Computed once and threaded through everything below, so every layer
     // this app adds sits under text labels instead of covering them.
     const labelLayerId = getFirstLabelLayerId();
@@ -614,29 +504,11 @@ map.on("load", () => {
         layout: { visibility: "none" },
         paint: { "line-color": "#90a4ae", "line-width": 1.5 }
     }, labelLayerId);
-//  Promise.all([
-//     preloadVectorLayer("parks"),
-//     preloadVectorLayer("trees"),
-//     preloadVectorLayer("roads")
-// ]).then(() => {
 
-//     console.log("All Salzburg vector data preloaded.");
-
-// });
-preloadAllVectorLayers();
+    preloadAllVectorLayers();
 });
 
-// Object.keys(vectorLayers).forEach((key) => {
-//     const cfg = vectorLayers[key];
-//     if (!cfg.checkbox) return;
-//     cfg.checkbox.addEventListener("change", () => {
-//         const visibility = cfg.checkbox.checked ? "visible" : "none";
-//         cfg.layers.forEach((id) => {
-//             if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visibility);
-//         });
-//         fetchVectorLayer(key);
-//     });
-// });
+
 Object.keys(vectorLayers).forEach((key) => {
 
     const cfg = vectorLayers[key];
@@ -875,10 +747,10 @@ function getTiffImage() {
                 }
                 return image;
             });
-   
+
     }
     return tiffImagePromise;
-    
+
 }
 function projectBufferToRasterCRS(bufferPolygon) {
 
@@ -1027,13 +899,13 @@ async function runAnalysis() {
                 "Average LST:",
                 avgLst
             );
-                     const image = tiffResult.value;
+            const image = tiffResult.value;
 
-console.log("GeoTIFF file directory:", image.fileDirectory);
-console.log("GeoTIFF GDAL metadata:", image.getGDALMetadata());
-console.log("Number of bands:", image.getSamplesPerPixel());
+            console.log("GeoTIFF file directory:", image.fileDirectory);
+            console.log("GeoTIFF GDAL metadata:", image.getGDALMetadata());
+            console.log("Number of bands:", image.getSamplesPerPixel());
 
-            
+
         } else {
             console.warn("LST raster unavailable:", tiffResult.reason);
         }

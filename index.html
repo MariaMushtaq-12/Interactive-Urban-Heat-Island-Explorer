@@ -42,11 +42,7 @@
       </div>
 
       <div class="header-right">
-        <!-- <div class="search-box">
-          <i class="fa-solid fa-magnifying-glass"></i>
-
-          <input type="text" placeholder="Search location..." />
-        </div> -->
+      
 
         <button id="about-button">
           <i class="fa-solid fa-circle-info"></i>
@@ -135,7 +131,14 @@
           <i class="fa-solid fa-chart-column"></i>
           Analysis
         </h2>
+        <div class="summary-card" id="analysisSummaryCard">
+          <h4><i class="fa-solid fa-lightbulb"></i> Summary</h4>
+          <p id="analysisSummary">
+            Run an analysis to see how green space relates to heat here.
+          </p>
+        </div>
 
+ <div class="indicators-grid">
         <div class="result-card">
           <h4>Temperature</h4>
 
@@ -160,11 +163,7 @@
           <span id="resultNearest">-- m</span>
         </div>
 
-        <div class="result-card">
-          <h4>Surface Heat Level</h4>
-
-          <span id="resultRisk">Not Calculated</span>
-        </div>
+        
         <!-- ------------------- -->
         <div class="result-card">
           <h4>Green Coverage</h4>
@@ -177,13 +176,13 @@
 
           <span id="resultBuiltCoverage">--%</span>
         </div>
+        <div class="result-card">
+          <h4>Surface Heat Level</h4>
 
-        <div class="summary-card" id="analysisSummaryCard">
-          <h4><i class="fa-solid fa-lightbulb"></i> Summary</h4>
-          <p id="analysisSummary">
-            Run an analysis to see how green space relates to heat here.
-          </p>
+          <span id="resultRisk">Not Calculated</span>
         </div>
+</div>
+        
         <!-- ---------- -->
         <div class="legend">
           <h3>Legend</h3>
