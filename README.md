@@ -4,6 +4,9 @@ An interactive **WebGIS application** for exploring the Urban Heat Island (UHI) 
 
 The application combines raster and vector geospatial data and allows users to perform interactive spatial analysis by clicking on the map.
 
+[Open Urban Heat Island Explorer Live](https://mariamushtaq-12.github.io/Interactive-Urban-Heat-Island-Explorer/)
+
+
 ---
 
 ## 🗺️ Project Overview
