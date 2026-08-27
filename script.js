@@ -188,7 +188,8 @@ const vectorLayers = {
         // minzoom: 14,
         checkbox: document.getElementById("layer-trees"),
         asPolygon: false,
-        layers: ["vec-trees-circle"],
+        // layers: ["vec-trees-circle"],
+        layers: ["vec-trees"],
         // controller: null,
         // query: (bbox) => `[out:json][timeout:25];node["natural"="tree"](${bbox});out;`
         query: (bbox) =>
@@ -485,18 +486,59 @@ map.on("load", () => {
     addBuildingLayers(labelLayerId);
 
     // Trees — hidden by default (checkbox starts unchecked)
-    map.addSource("vec-trees", { type: "geojson", data: emptyFC });
+    // map.addSource("vec-trees", { type: "geojson", data: emptyFC });
+    // map.addLayer({
+    //     id: "vec-trees-circle", type: "circle", source: "vec-trees",
+    //     layout: { visibility: "none" },
+    //     paint: {
+    //         "circle-radius": 3,
+    //         "circle-color": "#2e7d32",
+    //         "circle-stroke-width": 1,
+    //         "circle-stroke-color": "#ffffff"
+    //     }
+    // }, labelLayerId);
+// Trees — hidden by default
+map.addSource("vec-trees", {
+    type: "geojson",
+    data: emptyFC
+});
+
+map.loadImage("./assets/tree.png", (error, image) => {
+
+    if (error) {
+        console.error("Tree icon could not be loaded:", error);
+        return;
+    }
+
+    if (!map.hasImage("tree-icon")) {
+        map.addImage("tree-icon", image);
+    }
+
     map.addLayer({
-        id: "vec-trees-circle", type: "circle", source: "vec-trees",
-        layout: { visibility: "none" },
-        paint: {
-            "circle-radius": 3,
-            "circle-color": "#2e7d32",
-            "circle-stroke-width": 1,
-            "circle-stroke-color": "#ffffff"
+        id: "vec-trees",
+        type: "symbol",
+        source: "vec-trees",
+
+        layout: {
+            "icon-image": "tree-icon",
+
+            "icon-size": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                13, 0.25,
+                16, 0.45,
+                19, 0.65
+            ],
+
+            "icon-allow-overlap": true,
+
+            "visibility": "none"
         }
+
     }, labelLayerId);
 
+});
     // Roads — hidden by default (checkbox starts unchecked)
     map.addSource("vec-roads", { type: "geojson", data: emptyFC });
     map.addLayer({
