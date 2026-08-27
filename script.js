@@ -92,7 +92,13 @@ map.on("mousemove", (e) => {
 
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 const emptyFC = { type: "FeatureCollection", features: [] };
-
+// south, west, north, east
+const SALZBURG_BBOX = "47.770,12.997,47.830,13.097";
+const vectorDataCache = {
+    parks: null,
+    trees: null,
+    roads: null
+};
 function bboxString(bounds) {
     return [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(",");
 }
@@ -131,70 +137,277 @@ function debounce(fn, delay) {
 
 const vectorLayers = {
     parks: {
-        minzoom: 9,
+        // minzoom: 9,
         checkbox: document.getElementById("layer-parks"),
         asPolygon: true,
         layers: ["vec-parks-fill", "vec-parks-line"],
-        controller: null,
+        // controller: null,
+        // query: (bbox) =>
+        //     `[out:json][timeout:25];(way["leisure"="park"](${bbox});way["landuse"="forest"](${bbox});way["landuse"="grass"](${bbox});way["natural"="wood"](${bbox}););out geom;`
         query: (bbox) =>
-            `[out:json][timeout:25];(way["leisure"="park"](${bbox});way["landuse"="forest"](${bbox});way["landuse"="grass"](${bbox});way["natural"="wood"](${bbox}););out geom;`
+            `[out:json][timeout:25];
+            (
+                way["leisure"="park"](${bbox});
+                way["landuse"="forest"](${bbox});
+                way["landuse"="grass"](${bbox});
+                way["natural"="wood"](${bbox});
+            );
+            out geom;`
     },
     trees: {
-        minzoom: 14,
+        // minzoom: 14,
         checkbox: document.getElementById("layer-trees"),
         asPolygon: false,
         layers: ["vec-trees-circle"],
-        controller: null,
-        query: (bbox) => `[out:json][timeout:25];node["natural"="tree"](${bbox});out;`
+        // controller: null,
+        // query: (bbox) => `[out:json][timeout:25];node["natural"="tree"](${bbox});out;`
+        query: (bbox) =>
+            `[out:json][timeout:25];
+            node["natural"="tree"](${bbox});
+            out;`
     },
     roads: {
-        minzoom: 14,
+        // minzoom: 14,
         checkbox: document.getElementById("layer-roads"),
         asPolygon: false,
         layers: ["vec-roads-line"],
-        controller: null,
-        query: (bbox) =>
-            `[out:json][timeout:25];way["highway"~"^(primary|secondary|tertiary|residential)$"](${bbox});out geom;`
+        // controller: null,
+        // query: (bbox) =>
+        //     `[out:json][timeout:25];way["highway"~"^(primary|secondary|tertiary|residential)$"](${bbox});out geom;`
+         query: (bbox) =>
+            `[out:json][timeout:25];
+            way["highway"~"^(primary|secondary|tertiary|residential)$"](${bbox});
+            out geom;`
     }
 };
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+// async function preloadVectorLayer(key) {
 
-function fetchVectorLayer(key) {
+//     const cfg = vectorLayers[key];
+
+//     const query = cfg.query(SALZBURG_BBOX);
+
+//     try {
+
+//         const response = await fetch(
+//             OVERPASS_URL,
+//             {
+//                 method: "POST",
+//                 body: "data=" + encodeURIComponent(query)
+//             }
+//         );
+
+//         if (!response.ok) {
+//             throw new Error(`HTTP ${response.status}`);
+//         }
+
+//         const osmData = await response.json();
+
+//         const geojson = overpassToGeoJSON(
+//             osmData,
+//             cfg.asPolygon
+//         );
+
+//         // Store permanently in browser memory
+//         vectorDataCache[key] = geojson;
+
+//         console.log(
+//             `${key} preloaded:`,
+//             geojson.features.length,
+//             "features"
+//         );
+
+//         // Keep it hidden initially
+//         const source = map.getSource("vec-" + key);
+
+//         if (source) {
+//             source.setData(emptyFC);
+//         }
+
+//     } catch (error) {
+
+//         console.error(
+//             `Failed to preload ${key}:`,
+//             error
+//         );
+
+//         vectorDataCache[key] = emptyFC;
+
+//     }
+// }
+async function preloadVectorLayer(key) {
+
     const cfg = vectorLayers[key];
-    const sourceId = "vec-" + key;
-    if (!cfg.checkbox || !map.getSource(sourceId)) return;
+    const query = cfg.query(SALZBURG_BBOX);
 
-    const zoomOk = map.getZoom() >= cfg.minzoom;
-    const isChecked = cfg.checkbox.checked;
+    const MAX_RETRIES = 4;
 
-    if (!isChecked || !zoomOk) {
-        map.getSource(sourceId).setData(emptyFC);
-        return;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+
+        try {
+
+            const response = await fetch(
+                OVERPASS_URL,
+                {
+                    method: "POST",
+                    body: "data=" + encodeURIComponent(query)
+                }
+            );
+
+            if (response.status === 429) {
+
+                if (attempt === MAX_RETRIES) {
+                    throw new Error(
+                        `Overpass rate limit reached for ${key}`
+                    );
+                }
+
+                // 10s → 20s → 40s → 80s
+                const waitTime = 10000 * Math.pow(2, attempt);
+
+                console.warn(
+                    `Overpass 429 for ${key}. ` +
+                    `Retry ${attempt + 1}/${MAX_RETRIES} in ${waitTime / 1000}s`
+                );
+
+                await sleep(waitTime);
+
+                continue;
+            }
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const osmData = await response.json();
+
+            const geojson = overpassToGeoJSON(
+                osmData,
+                cfg.asPolygon
+            );
+
+            // SUCCESS: save in cache
+            vectorDataCache[key] = geojson;
+
+            console.log(
+                `✓ ${key} loaded:`,
+                geojson.features.length,
+                "features"
+            );
+
+            return geojson;
+
+        } catch (error) {
+
+            // Network errors can also be retried
+            if (attempt === MAX_RETRIES) {
+
+                console.error(
+                    `✗ Failed to load ${key}:`,
+                    error
+                );
+
+                // Important: don't overwrite existing cached data
+                if (!vectorDataCache[key]) {
+                    vectorDataCache[key] = emptyFC;
+                }
+
+                return vectorDataCache[key];
+            }
+
+            const waitTime = 10000 * Math.pow(2, attempt);
+
+            console.warn(
+                `${key} request failed. ` +
+                `Retrying in ${waitTime / 1000}s...`
+            );
+
+            await sleep(waitTime);
+        }
     }
-
-    if (cfg.controller) cfg.controller.abort();
-    const controller = new AbortController();
-    cfg.controller = controller;
-
-    const query = cfg.query(bboxString(map.getBounds()));
-
-    fetch(OVERPASS_URL, {
-        method: "POST",
-        body: "data=" + encodeURIComponent(query),
-        signal: controller.signal
-    })
-        .then((res) => res.json())
-        .then((data) => {
-            const geojson = overpassToGeoJSON(data, cfg.asPolygon);
-            if (map.getSource(sourceId)) map.getSource(sourceId).setData(geojson);
-        })
-        .catch((err) => {
-            if (err.name !== "AbortError") console.warn(`Vector layer "${key}" failed to load:`, err);
-        });
 }
 
-const refreshAllVectorLayers = debounce(() => {
-    Object.keys(vectorLayers).forEach(fetchVectorLayer);
-}, 700);
+
+async function preloadAllVectorLayers() {
+
+    console.log("Loading Salzburg vector data...");
+
+    await preloadVectorLayer("parks");
+
+    await sleep(3000);
+
+    await preloadVectorLayer("trees");
+
+    await sleep(3000);
+
+    await preloadVectorLayer("roads");
+
+    console.log("✓ All Salzburg vector data loading finished.");
+}
+// function fetchVectorLayer(key) {
+//     const cfg = vectorLayers[key];
+//     const sourceId = "vec-" + key;
+//     if (!cfg.checkbox || !map.getSource(sourceId)) return;
+
+//     const zoomOk = map.getZoom() >= cfg.minzoom;
+//     const isChecked = cfg.checkbox.checked;
+
+//     if (!isChecked || !zoomOk) {
+//         map.getSource(sourceId).setData(emptyFC);
+//         return;
+//     }
+
+//     if (cfg.controller) cfg.controller.abort();
+//     const controller = new AbortController();
+//     cfg.controller = controller;
+
+//     const query = cfg.query(bboxString(map.getBounds()));
+
+//     fetch(OVERPASS_URL, {
+//         method: "POST",
+//         body: "data=" + encodeURIComponent(query),
+//         signal: controller.signal
+//     })
+//         .then((res) => res.json())
+//         .then((data) => {
+//             const geojson = overpassToGeoJSON(data, cfg.asPolygon);
+//             if (map.getSource(sourceId)) map.getSource(sourceId).setData(geojson);
+//         })
+//         .catch((err) => {
+//             if (err.name !== "AbortError") console.warn(`Vector layer "${key}" failed to load:`, err);
+//         });
+// }
+
+function toggleVectorLayer(key) {
+
+    const cfg = vectorLayers[key];
+
+    const source = map.getSource("vec-" + key);
+
+    if (!source) return;
+
+
+    if (cfg.checkbox.checked) {
+
+        // Show preloaded data
+        source.setData(
+            vectorDataCache[key] || emptyFC
+        );
+
+    } else {
+
+        // Hide data
+        source.setData(emptyFC);
+
+    }
+
+}
+
+// const refreshAllVectorLayers = debounce(() => {
+//     Object.keys(vectorLayers).forEach(fetchVectorLayer);
+// }, 700);
 
 
 // Shared by every layer below that needs to sit under map labels.
@@ -307,6 +520,7 @@ function addBuildingLayers(labelLayerId) {
 }
 
 map.on("load", () => {
+   
     // Computed once and threaded through everything below, so every layer
     // this app adds sits under text labels instead of covering them.
     const labelLayerId = getFirstLabelLayerId();
@@ -349,24 +563,83 @@ map.on("load", () => {
         layout: { visibility: "none" },
         paint: { "line-color": "#90a4ae", "line-width": 1.5 }
     }, labelLayerId);
+//  Promise.all([
+//     preloadVectorLayer("parks"),
+//     preloadVectorLayer("trees"),
+//     preloadVectorLayer("roads")
+// ]).then(() => {
 
-    refreshAllVectorLayers();
+//     console.log("All Salzburg vector data preloaded.");
+
+// });
+preloadAllVectorLayers();
 });
 
-map.on("moveend", refreshAllVectorLayers);
-
+// Object.keys(vectorLayers).forEach((key) => {
+//     const cfg = vectorLayers[key];
+//     if (!cfg.checkbox) return;
+//     cfg.checkbox.addEventListener("change", () => {
+//         const visibility = cfg.checkbox.checked ? "visible" : "none";
+//         cfg.layers.forEach((id) => {
+//             if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visibility);
+//         });
+//         fetchVectorLayer(key);
+//     });
+// });
 Object.keys(vectorLayers).forEach((key) => {
-    const cfg = vectorLayers[key];
-    if (!cfg.checkbox) return;
-    cfg.checkbox.addEventListener("change", () => {
-        const visibility = cfg.checkbox.checked ? "visible" : "none";
-        cfg.layers.forEach((id) => {
-            if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visibility);
-        });
-        fetchVectorLayer(key);
-    });
-});
 
+    const cfg = vectorLayers[key];
+
+    if (!cfg.checkbox) return;
+
+    cfg.checkbox.addEventListener("change", () => {
+
+        const isVisible = cfg.checkbox.checked
+            ? "visible"
+            : "none";
+
+        // Show/hide the MapLibre layer itself
+        cfg.layers.forEach((layerId) => {
+
+            if (map.getLayer(layerId)) {
+                map.setLayoutProperty(
+                    layerId,
+                    "visibility",
+                    isVisible
+                );
+            }
+
+        });
+
+
+        // Put cached data into source when checked
+        const source = map.getSource("vec-" + key);
+
+        if (source) {
+
+            if (cfg.checkbox.checked) {
+
+                console.log(
+                    `Showing ${key}:`,
+                    vectorDataCache[key]?.features?.length || 0,
+                    "features"
+                );
+
+                source.setData(
+                    vectorDataCache[key] || emptyFC
+                );
+
+            } else {
+
+                source.setData(emptyFC);
+
+            }
+
+        }
+
+    });
+
+});
 // Buildings toggle — just visibility, no fetch (tile source loads on its own)
 const buildingsCheckbox = document.getElementById("layer-buildings");
 if (buildingsCheckbox) {
